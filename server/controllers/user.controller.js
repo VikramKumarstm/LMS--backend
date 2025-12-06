@@ -1,6 +1,12 @@
 import User from "../models/user.model.js";
 import AppError from "../utils/error.utils.js";
 
+const cookieOptions = {
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    httpOnly: true,
+    secure: true
+}
+
 //register user
 export const register = async (req, res, next) => {
 
@@ -34,11 +40,17 @@ export const register = async (req, res, next) => {
             return next(new AppError('User registration failed, please try again!', 400))
         }
 
-        //TODO : File upload
+        //TODO: File upload
 
         await user.save();
 
         user.password = undefined;
+
+        //Generate token
+        const token = await user.generateJWTToken();
+
+        //set token into cookie
+        res.cookie('token', token, cookieOptions)
 
         res.status(201).json({
             success: true,
