@@ -30,7 +30,7 @@ app.all(/.*/, (req, res) => {
     res.status(404).send('OOPS!! 404 page not found.')
 });
 
-app.use(errorMiddleware)
+app.use(errorMiddleware);
 
 
 export default app;
