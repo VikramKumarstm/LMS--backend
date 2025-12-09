@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 
-const sendEmail = async function (email, subject, message) => {
+const sendEmail = async function (email, subject, message) {
     // Create a test account or replace with real credentials.
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
