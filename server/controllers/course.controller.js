@@ -44,9 +44,25 @@ const getLecturesByCourseId = async (req, res, next) => {
     }
 }
 
+//Create course
+const createCourse = async (req, res, next) => {
 
+}
+
+//update course
+const updateCourse = async (req, res, next) => {
+
+}
+
+//Delete Course
+const removeCourse = async (req, res, next) => {
+
+}
 
 export {
     getAllCourses,
-    getLecturesByCourseId
+    getLecturesByCourseId,
+    createCourse,
+    updateCourse,
+    removeCourse
 }

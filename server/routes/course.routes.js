@@ -1,9 +1,17 @@
 import express from 'express';
-import { getAllCourses, getLecturesByCourseId } from '../controllers/course.controller.js';
+import { createCourse, getAllCourses, getLecturesByCourseId, removeCourse, updateCourse } from '../controllers/course.controller.js';
 import { isLoggedIn } from '../middlewares/auth.middleware.js';
 const router = express.Router();
 
-router.get('/', getAllCourses);
-router.get('/:id', isLoggedIn, getLecturesByCourseId)
+router.route('/')
+    .get(getAllCourses)
+    .post(createCourse)
+;
+
+router.route('/:id')
+    .get(isLoggedIn, getLecturesByCourseId)
+    .put(updateCourse)
+    .delete(removeCourse)
+;
 
 export default router;
