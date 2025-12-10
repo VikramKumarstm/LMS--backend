@@ -188,16 +188,21 @@ export const forgotPassword = async (req, res, next) => {
         return next(new AppError('Email not registered', 400))
     }
 
+    // Generate reset token and set token + expiry on the user
     const resetToken = await user.generatePasswordResetToken();
 
     await user.save();
 
     const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
-    console.log(resetPasswordURL);
     
     const subject = 'Reset Password'
-    const message = `You can reset your password by clicking <a href=${resetPasswordURL} traget='_blank> Reset Your Password</a>\n If the above link does not work for some reason then the copy paste the link in new tab ${resetPasswordURL}.\nIf you have not requested this, kindly ignore.`
+    const message = `You can reset your password by clicking the link below:
+        ${resetPasswordURL}
+        If the above link does not work, copy and paste it into your browser.
+
+        If you did not request this, please ignore this email.
+    `;
+    
     try {
 
         await sendEmail(email, subject, message);
