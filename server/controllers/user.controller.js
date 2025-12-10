@@ -3,6 +3,7 @@ import AppError from "../utils/error.utils.js";
 import cloudinary from "cloudinary";
 import fs from 'fs/promises';
 import sendEmail from "../utils/sendEmail.js";
+import crypto from "crypto";
 
 const cookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -223,6 +224,122 @@ export const forgotPassword = async (req, res, next) => {
 }
 
 //reset password
-export const resetPassword = async (req, res) => {
+export const resetPassword = async (req, res, next) => {
+
+    const { resetToken } = req.params;
+    const { password } = req.body;
+
+    const forgotPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    const user = await User.findOne({
+        forgotPasswordToken,
+        forgotPasswordExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        return next(new AppError('Token is invalid or Expired, please try again', 400))
+    }
+
+    user.password = password;
+
+    user.forgotPasswordToken= undefined;
+    user.forgotPasswordExpiry= undefined;
+
+    user.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'Password changed successfully.'
+    })
+
+}
+
+//change password
+export const changePassword = async (req, res, next) => {
+
+    const { oldPassword, newPassword } = req.body;
+    const { id } = req.user;
+
+    if (!oldPassword, newPassword) {
+        return next(new AppError('All fields are mandatory.', 400));
+    }
+
+    const user = await User.findById(id).select('+password');
+
+    if (!user) {
+        return next(new AppError('User does not exists.', 400));
+    }
+
+    const isPasswordValid = await user.comparePassword(oldPassword);
+
+    if(!isPasswordValid) {
+        return next(new AppError('Invalid old password', 400));
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    user.password = undefined;
+
+    res.status(200).json({
+        success: true,
+        message: 'Password changed successfully.'
+    })
+}
+
+//Update profile
+export const updateProfile = async (req, res, next) => {
+
+    const fullName = req.body;
+    const { id } = req.user.id;
+
+    const user = await User.findById(id);
+
+    if(!user) {
+        return next(new AppError('User does not exist.', 400))
+    }
+
+    if(req.fullName) {
+        user.fullName = fullName;
+    }
+
+    if (req.file) {
+        await cloudinary.v2.uploader.destroy(user.avatar.public_id)
+    }
+
+    if(req.file) {
+            
+        try {
+            const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                folder: 'lms',
+                width: 250,
+                height: 250,
+                gravity: 'faces',
+                crop: 'fill',
+            });
+
+            if(result) {
+                user.avatar.public_id = result.public_id;
+                user.avatar.secure_url = result.secure_url;
+
+                //Remove file from server
+                fs.rm(`uploads/${req.file.filename}`)
+            }
+            
+        } catch (error) {
+            return next(error || 'file not uploaded! please try again', 500)
+            
+        }
+    }
+
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'User details updated successfully.'
+    })
 
 }
