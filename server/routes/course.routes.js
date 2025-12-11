@@ -13,7 +13,7 @@ router.route('/:id')
     .get(isLoggedIn, authorizedRoles('ADMIN'), getLecturesByCourseId)
     .put(isLoggedIn, authorizedRoles('ADMIN'), updateCourse)
     .delete(isLoggedIn, authorizedRoles('ADMIN'), removeCourse)
-    .post(isLoggedIn, authorizedRoles('ADMIN'), upload.single('thumbnail'), addLectureToCourseById)
+    .post(isLoggedIn, authorizedRoles('ADMIN'), upload.single('lecture'), addLectureToCourseById)
 ;
 
 export default router;
