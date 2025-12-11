@@ -1,11 +1,12 @@
 import express from 'express';
 import { createCourse, getAllCourses, getLecturesByCourseId, removeCourse, updateCourse } from '../controllers/course.controller.js';
 import { isLoggedIn } from '../middlewares/auth.middleware.js';
+import upload from '../middlewares/multer.middleware.js';
 const router = express.Router();
 
 router.route('/')
     .get(getAllCourses)
-    .post(createCourse)
+    .post(upload.single('thumbnail'), createCourse)
 ;
 
 router.route('/:id')
