@@ -98,6 +98,34 @@ const createCourse = async (req, res, next) => {
 //update course
 const updateCourse = async (req, res, next) => {
 
+    try {
+
+        const { id } = req.params;
+
+        const course = await Course.findByIdAndUpdate(
+            id,
+            {
+                $set: req.body
+            },
+            {
+                runValidators: true
+            }
+        );
+
+        if(!course) {
+            return next(new AppError('Course with given id does not exist.', 400))
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Course updated successfully',
+            data: course
+        })
+        
+    } catch (error) {
+        return next(new AppError(error.message, 500))
+    }
+
 }
 
 //Delete Course
