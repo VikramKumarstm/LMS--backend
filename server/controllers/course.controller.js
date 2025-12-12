@@ -216,6 +216,41 @@ const addLectureToCourseById = async (req, res, next) => {
 }
 
 //delete lecture from course -> TODO
+const deleteLectureToCourseById = async (req, res, next) => {
+    try {
+
+        const { courseId, lectureId } = req.params;
+
+        const course = await Course.findById(courseId);
+
+        if(!course) {
+            return next(new AppError('Course with the given id does not found.', 404));
+        }
+
+        const lecture = course.lectures.id(lectureId);
+
+        if(!lecture) {
+            return next(new AppError('Lecture with the given id does not found.', 404))
+        }
+
+        //remove the lecture
+        lecture.deleteOne();
+
+        //update lecture count
+        course.numbersOfLectures = course.lectures.length;
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Lecture deleted successfully.',
+            course
+        })
+        
+    } catch (error) {
+        return next(new AppError(error.message, 500))
+    }
+}
 
 export {
     getAllCourses,
@@ -223,5 +258,6 @@ export {
     createCourse,
     updateCourse,
     removeCourse,
-    addLectureToCourseById
+    addLectureToCourseById,
+    deleteLectureToCourseById
 }
